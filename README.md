@@ -2573,6 +2573,29 @@ Other Style Guides
     export default AirbnbStyleGuide;
     ```
 
+  <a name="naming--Acronyms-and-Initialisms"></a>
+  - [22.9](#naming--Acronyms-and-Initialisms) Acronyms and initialisms should always be all capitalized.
+
+    > Why? Names are for readability, not to appease a computer algorithm.
+
+    ```javascript
+    // bad
+    import SmsContainer from './containers/SmsContainer';
+    
+    // bad 
+    const HttpRequests = [
+      // ...
+    ];
+    
+    // good
+    import SMSContainer from './containers/SMSContainer';
+    
+    // good
+    const HTTPRequests = [
+      // ...
+    ];
+    ```
+
 
 **[⬆ back to top](#table-of-contents)**
 
