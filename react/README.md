@@ -19,563 +19,787 @@
   1. [Ordering](#ordering)
   1. [`isMounted`](#ismounted)
 
-## Basic Rules
 
-  - Only include one React component per file.
-    - However, multiple [Stateless, or Pure, Components](https://facebook.github.io/react/docs/reusable-components.html#stateless-functions) are allowed per file. eslint: [`react/no-multi-comp`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/no-multi-comp.md#ignorestateless).
-  - Always use JSX syntax.
-  - Do not use `React.createElement` unless you're initializing the app from a file that is not JSX.
+## 基本规则
 
-## Class vs `React.createClass` vs stateless
+每个文件只包含一个React组件。
+    但是，每个文件允许多个无状态或纯组件。 
+    eslint: react/no-multi-comp.
 
-  - If you have internal state and/or refs, prefer `class extends React.Component` over `React.createClass` unless you have a very good reason to use mixins. eslint: [`react/prefer-es6-class`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/prefer-es6-class.md) [`react/prefer-stateless-function`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/prefer-stateless-function.md)
+始终使用JSX语法。
 
-    ```jsx
-    // bad
-    const Listing = React.createClass({
-      // ...
-      render() {
+除非你正在从非JSX的文件初始化应用程序，否则不要使用React.createElement。
+
+
+https://facebook.github.io/react/docs/components-and-props.html
+
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/no-multi-comp.md#ignorestateless
+
+
+## Class vs React.createClass vs stateless
+
+如果你有内部状态和/或refs，优先考虑 class extends React.Component 胜过 React.createClass 
+eslint: react/prefer-es6-class react/prefer-stateless-function
+
+```jsx
+
+// good
+class Listing extends React.Component {
+    // ...
+    render() {
         return <div>{this.state.hello}</div>;
-      }
-    });
+    }
+}
 
-    // good
-    class Listing extends React.Component {
-      // ...
-      render() {
+import React, { Component } from 'react';
+
+class Listing extends Component {
+    // ...
+    render() {
         return <div>{this.state.hello}</div>;
-      }
     }
-    ```
+}
 
-    And if you don't have state or refs, prefer normal functions (not arrow functions) over classes:
+``` 
 
-    ```jsx
-    // bad
-    class Listing extends React.Component {
-      render() {
-        return <div>{this.props.hello}</div>;
-      }
-    }
 
-    // bad (relying on function name inference is discouraged)
-    const Listing = ({ hello }) => (
-      <div>{hello}</div>
-    );
 
-    // good
-    function Listing({ hello }) {
-      return <div>{hello}</div>;
-    }
-    ```
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/prefer-es6-class.md
+
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/prefer-stateless-function.md
+
+
+如果你没有状态或refs，优先考虑 正常函数（不是ES6 箭头函数）胜过 Class：
+
+不鼓励依赖函数名推理/推论
+
+
+
+```jsx
+
+// bad (ES6 依赖函数名推理/推论, 不鼓励)
+const Listing = ({ hello }) => (
+    <div>{hello}</div>
+);
+
+// good
+function Listing({ hello }) {
+    return <div>{hello}</div>;
+}
+
+``` 
+
+
+
+## Mixins
+
+
+不要使用 mixins。
+
+为什么？混合引入隐式依赖，导致名称冲突，并导致滚雪球般的复杂性。
+
+mixins的大多数用例， 都可以通过组件，高阶组件或实用程序模块以更好的方式实现。
+
+
+https://facebook.github.io/react/blog/2016/07/13/mixins-considered-harmful.html
+
 
 ## Naming
 
-  - **Extensions**: Use `.jsx` extension for React components.
-  - **Filename**: Use PascalCase for filenames. E.g., `ReservationCard.jsx`.
-  - **Reference Naming**: Use PascalCase for React components and camelCase for their instances. eslint: [`react/jsx-pascal-case`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-pascal-case.md)
 
-    ```jsx
-    // bad
-    import reservationCard from './ReservationCard';
+扩展名：对React组件使用.jsx扩展名。
 
-    // good
-    import ReservationCard from './ReservationCard';
+文件名：使用PascalCase作为文件名。例如，ReservationCard.jsx。
 
-    // bad
-    const ReservationItem = <ReservationCard />;
+参考命名：对于React组件使用PascalCase，为其实例使用camelCase。
 
-    // good
-    const reservationItem = <ReservationCard />;
-    ```
 
-  - **Component Naming**: Use the filename as the component name. For example, `ReservationCard.jsx` should have a reference name of `ReservationCard`. However, for root components of a directory, use `index.jsx` as the filename and use the directory name as the component name:
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-pascal-case.md
 
-    ```jsx
-    // bad
-    import Footer from './Footer/Footer';
+```jsx
 
-    // bad
-    import Footer from './Footer/index';
 
-    // good
-    import Footer from './Footer';
-    ```
-  - **Higher-order Component Naming**: Use a composite of the higher-order component's name and the passed-in component's name as the `displayName` on the generated component. For example, the higher-order component `withFoo()`, when passed a component `Bar` should produce a component with a `displayName` of `withFoo(Bar)`.
+// good
+import ReservationCard from './ReservationCard';
 
-  > Why? A component's `displayName` may be used by developer tools or in error messages, and having a value that clearly expresses this relationship helps people understand what is happening.
+// good
+const reservationItem = <ReservationCard />;
 
-    ```jsx
-    // bad
-    export default function withFoo(WrappedComponent) {
-      return function WithFoo(props) {
+``` 
+
+组件命名：使用文件名作为组件名称。
+
+例如，ReservationCard.jsx应具有参考名称ReservationCard。
+但是，对于目录的根组件，请使用index.jsx作为文件名，并使用目录名作为组件名称：
+
+
+```jsx
+
+// good
+import Footer from './Footer';
+
+``` 
+
+
+高阶组件命名：使用高阶组件名称和传入的组件名称的组合作为生成组件上的displayName。
+例如，高阶组件 withFoo(), 在传递组件 Bar时应该生成一个具有 withFoo(Bar)的 displayName的组件。
+
+为什么？组件的displayName可以由开发人员工具或错误消息使用，并且具有清楚表达此关系的值可帮助人们理解发生了什么。
+
+
+```jsx
+
+ // bad
+export default function withFoo(WrappedComponent) {
+    return function WithFoo(props) {
         return <WrappedComponent {...props} foo />;
-      }
+    }
+}
+
+// good
+export default function withFoo(WrappedComponent) {
+    function WithFoo(props) {
+        return <WrappedComponent {...props} foo />;
     }
 
-    // good
-    export default function withFoo(WrappedComponent) {
-      function WithFoo(props) {
-        return <WrappedComponent {...props} foo />;
-      }
+    const wrappedComponentName = WrappedComponent.displayName || WrappedComponent.name || 'Component';
 
-      const wrappedComponentName = WrappedComponent.displayName
-        || WrappedComponent.name
-        || 'Component';
+    WithFoo.displayName = `withFoo(${wrappedComponentName})`;
+    return WithFoo;
+}
 
-      WithFoo.displayName = `withFoo(${wrappedComponentName})`;
-      return WithFoo;
-    }
-    ```
+# displayName ???
+
+``` 
+
+
+Props命名：避免使用DOM组件prop名称用于不同的目的。
+
+
+为什么？人们期望Props像style和className意味着一个特定的东西。
+为应用程序的一个子集更改此API会使代码的可读性和可维护性降低，并可能导致错误。
+
+```jsx
+
+// bad
+<MyComponent style="fancy" />
+
+// good
+<MyComponent variant="fancy" />
+
+``` 
+
+
 ## Declaration
 
-  - Do not use `displayName` for naming components. Instead, name the component by reference.
+不要使用displayName命名组件。而是，通过引用命名组件。
 
-    ```jsx
-    // bad
-    export default React.createClass({
-      displayName: 'ReservationCard',
-      // stuff goes here
-    });
+```jsx
 
-    // good
-    export default class ReservationCard extends React.Component {
-    }
-    ```
+// bad
+export default React.createClass({
+    displayName: 'ReservationCard',
+    // 
+});
+
+// good
+export default class ReservationCard extends React.Component {
+    // 
+}
+
+``` 
 
 ## Alignment
 
-  - Follow these alignment styles for JSX syntax. eslint: [`react/jsx-closing-bracket-location`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-closing-bracket-location.md)
+遵循这些对齐样式的JSX语法。eslint: react/jsx-closing-bracket-location
 
-    ```jsx
-    // bad
-    <Foo superLongParam="bar"
-         anotherSuperLongParam="baz" />
 
-    // good
-    <Foo
-      superLongParam="bar"
-      anotherSuperLongParam="baz"
-    />
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-closing-bracket-location.md
 
-    // if props fit in one line then keep it on the same line
-    <Foo bar="bar" />
 
-    // children get indented normally
-    <Foo
-      superLongParam="bar"
-      anotherSuperLongParam="baz"
-    >
-      <Quux />
-    </Foo>
-    ```
+```jsx
+
+// good
+<Foo
+    superLongParam="bar"
+    anotherSuperLongParam="baz"
+/>
+
+// 如果props适合在一行，然后保持在同一行
+<Foo bar="bar" />
+
+// children 正常缩进
+<Foo
+    superLongParam="bar"
+    anotherSuperLongParam="baz"
+>
+    <Quux />
+</Foo>
+
+``` 
+
+
+
+
+
 
 ## Quotes
 
-  - Always use double quotes (`"`) for JSX attributes, but single quotes for all other JS. eslint: [`jsx-quotes`](http://eslint.org/docs/rules/jsx-quotes)
 
-  > Why? JSX attributes [can't contain escaped quotes](http://eslint.org/docs/rules/jsx-quotes), so double quotes make contractions like `"don't"` easier to type.
-  > Regular HTML attributes also typically use double quotes instead of single, so JSX attributes mirror this convention.
+对JSX属性始终使用双引号 (")，对所有其他JS使用单引号(')。eslint: jsx-quotes
 
-    ```jsx
-    // bad
-    <Foo bar='bar' />
+http://eslint.org/docs/rules/jsx-quotes
 
-    // good
-    <Foo bar="bar" />
 
-    // bad
-    <Foo style={{ left: "20px" }} />
+为什么？常规HTML属性通常使用双引号而不是单引号，因此JSX属性反映了此约定。
 
-    // good
-    <Foo style={{ left: '20px' }} />
-    ```
+
+
+
+```jsx
+
+// good
+<Foo bar="bar" />
+
+// good
+<Foo style={{ left: '20px' }} />
+
+``` 
+
+
+
 
 ## Spacing
 
-  - Always include a single space in your self-closing tag.
+始终在自我关闭代码中包含一个空格。
+eslint: no-multi-spaces, react/jsx-space-before-closing
 
-    ```jsx
-    // bad
-    <Foo/>
+http://eslint.org/docs/rules/no-multi-spaces
 
-    // very bad
-    <Foo                 />
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-space-before-closing.md
 
-    // bad
-    <Foo
-     />
 
-    // good
-    <Foo />
-    ```
+```jsx
 
-  - Do not pad JSX curly braces with spaces. eslint: [`react/jsx-curly-spacing`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-curly-spacing.md)
+// good
+<Foo />
 
-    ```jsx
-    // bad
-    <Foo bar={ baz } />
+``` 
 
-    // good
-    <Foo bar={baz} />
-    ```
+不要用空格填充JSX花括号。eslint: react/jsx-curly-spacing
+
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-curly-spacing.md
+
+
+```jsx
+
+// bad
+<Foo bar={ baz } />
+
+// good
+<Foo bar={baz} />
+
+``` 
+
 
 ## Props
 
-  - Always use camelCase for prop names.
+始终使用camelCase作为Props名称。
 
-    ```jsx
-    // bad
-    <Foo
-      UserName="hello"
-      phone_number={12345678}
-    />
 
-    // good
-    <Foo
-      userName="hello"
-      phoneNumber={12345678}
-    />
-    ```
+```jsx
 
-  - Omit the value of the prop when it is explicitly `true`. eslint: [`react/jsx-boolean-value`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-boolean-value.md)
+// good
+<Foo
+    userName="hello"
+    phoneNumber={12345678}
+/>
 
-    ```jsx
-    // bad
-    <Foo
-      hidden={true}
-    />
+``` 
 
-    // good
-    <Foo
-      hidden
-    />
-    ```
+当它明确的为true时，省略prop的值。eslint: react/jsx-boolean-value
 
-  - Always include an `alt` prop on `<img>` tags. If the image is presentational, `alt` can be an empty string or the `<img>` must have `role="presentation"`. eslint: [`jsx-a11y/img-has-alt`](https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/img-has-alt.md)
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-boolean-value.md
 
-    ```jsx
-    // bad
-    <img src="hello.jpg" />
 
-    // good
-    <img src="hello.jpg" alt="Me waving hello" />
+```jsx
 
-    // good
-    <img src="hello.jpg" alt="" />
+// bad
+<Foo
+    hidden={true}
+/>
 
-    // good
-    <img src="hello.jpg" role="presentation" />
-    ```
+// good
+<Foo
+    hidden
+/>
 
-  - Do not use words like "image", "photo", or "picture" in `<img>` `alt` props. eslint: [`jsx-a11y/img-redundant-alt`](https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/img-redundant-alt.md)
+``` 
 
-  > Why? Screenreaders already announce `img` elements as images, so there is no need to include this information in the alt text.
+始终在 &lt;img&gt; 标签上添加 alt属性。
+如果图像是演示/呈现的，alt可以是空字符串,或 &lt;img&gt; 必须具有role =“presentation”。
+eslint: jsx-a11y/img-has-alt
 
-    ```jsx
-    // bad
-    <img src="hello.jpg" alt="Picture of me waving hello" />
+https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/img-has-alt.md
 
-    // good
-    <img src="hello.jpg" alt="Me waving hello" />
-    ```
 
-  - Use only valid, non-abstract [ARIA roles](https://www.w3.org/TR/wai-aria/roles#role_definitions). eslint: [`jsx-a11y/aria-role`](https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/aria-role.md)
+```jsx
 
-    ```jsx
-    // bad - not an ARIA role
-    <div role="datepicker" />
+// good
+<img src="hello.jpg" alt="Me waving hello" />
 
-    // bad - abstract ARIA role
-    <div role="range" />
+// good
+<img src="hello.jpg" alt="" />
 
-    // good
-    <div role="button" />
-    ```
+// good
+<img src="hello.jpg" role="presentation" />
 
-  - Do not use `accessKey` on elements. eslint: [`jsx-a11y/no-access-key`](https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/no-access-key.md)
 
-  > Why? Inconsistencies between keyboard shortcuts and keyboard commands used by people using screenreaders and keyboards complicate accessibility.
+``` 
 
-  ```jsx
-  // bad
-  <div accessKey="h" />
+请勿在 &lt;img&gt; alt props中使用诸如 "image", "photo", 或 "picture"之类的字词。
+eslint: jsx-a11y/img-redundant-alt
 
-  // good
-  <div />
-  ```
+https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/img-redundant-alt.md
 
-  - Avoid using an array index as `key` prop, prefer a unique ID. ([why?](https://medium.com/@robinpokorny/index-as-a-key-is-an-anti-pattern-e0349aece318))
+为什么？屏幕阅读器已经公布img元素作为图像，所以没有必要在alt文本中包含这些信息。
 
-  ```jsx
-  // bad
-  {todos.map((todo, index) =>
+```jsx
+
+// bad
+<img src="hello.jpg" alt="Picture of me waving hello" />
+
+// good
+<img src="hello.jpg" alt="Me waving hello" />
+
+``` 
+
+仅使用有效的，非抽象的ARIA角色。 eslint: jsx-a11y/aria-role
+
+https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/aria-role.md
+
+
+```jsx
+
+// bad - not an ARIA role
+<div role="datepicker" />
+
+// bad - abstract ARIA role
+<div role="range" />
+
+// good
+<div role="button" />
+
+``` 
+
+不要对元素使用accessKey。eslint: jsx-a11y/no-access-key
+
+https://github.com/evcohen/eslint-plugin-jsx-a11y/blob/master/docs/rules/no-access-key.md
+
+
+为什么？键盘快捷键和使用屏幕阅读器和键盘的人使用的键盘命令之间的不一致使得可访问性变得复杂。
+
+```jsx
+
+// bad
+<div accessKey="h" />
+
+// good
+<div />
+
+``` 
+
+避免使用数组索引作为 key属性，优先考虑一个唯一/独一无二的ID。
+
+https://medium.com/@robinpokorny/index-as-a-key-is-an-anti-pattern-e0349aece318
+
+
+
+
+```jsx
+
+// bad
+{todos.map((todo, index) =>
     <Todo
-      {...todo}
-      key={index}
+        {...todo}
+        key={index}
     />
-  )}
+)}
 
-  // good
-  {todos.map(todo => (
+// good
+{todos.map(todo => (
     <Todo
-      {...todo}
-      key={todo.id}
+        {...todo}
+        key={todo.id}
     />
-  ))}
-  ```
+))}
+
+``` 
+
+始终为所有非必需props, 定义明确的defaultProps。
+
+为什么？ propTypes是一种形式的文档，并且提供defaultProps意味着你的代码的读者不必假设尽可能多。此外，这可能意味着您的代码可以省略某些类型检查。
+
+https://github.com/airbnb/javascript/issues/1337
+
+
+
+```jsx
+
+// bad
+function SFC({ foo, bar, children }) {
+    return <div>{foo}{bar}{children}</div>;
+}
+SFC.propTypes = {
+    foo: PropTypes.number.isRequired,
+    bar: PropTypes.string,
+    children: PropTypes.node,
+};
+
+
+
+// good
+function SFC({ foo, bar, children }) {
+    return <div>{foo}{bar}{children}</div>;
+}
+SFC.propTypes = {
+    foo: PropTypes.number.isRequired,
+    bar: PropTypes.string,
+    children: PropTypes.node,
+};
+SFC.defaultProps = {
+    bar: '',
+    children: null,
+};
+
+``` 
+
 
 ## Refs
 
-  - Always use ref callbacks. eslint: [`react/no-string-refs`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/no-string-refs.md)
+始终使用回调参考。 eslint: react/no-string-refs
 
-    ```jsx
-    // bad
-    <Foo
-      ref="myRef"
-    />
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/no-string-refs.md
 
-    // good
-    <Foo
-      ref={ref => { this.myRef = ref; }}
-    />
-    ```
+
+
+```jsx
+
+// bad
+<Foo
+    ref="myRef"
+/>
+
+// good
+<Foo
+    ref={(ref) => {this.myRef = ref;}}
+/>
+
+``` 
+
+
 
 ## Parentheses
 
-  - Wrap JSX tags in parentheses when they span more than one line. eslint: [`react/wrap-multilines`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/wrap-multilines.md)
+当JSX标记跨越多行时，将其包裹在括号中。eslint: react/jsx-wrap-multilines
 
-    ```jsx
-    // bad
-    render() {
-      return <MyComponent className="long body" foo="bar">
-               <MyChild />
-             </MyComponent>;
-    }
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-wrap-multilines.md
 
-    // good
-    render() {
-      return (
+
+```jsx
+
+
+// good
+render() {
+    return (
         <MyComponent className="long body" foo="bar">
-          <MyChild />
+            <MyChild />
         </MyComponent>
-      );
-    }
+    );
+}
 
-    // good, when single line
-    render() {
-      const body = <div>hello</div>;
-      return <MyComponent>{body}</MyComponent>;
-    }
-    ```
+// good, 当单行时
+render() {
+    const body = <div>hello</div>;
+    return <MyComponent>{body}</MyComponent>;
+}
 
-## Tags
+``` 
 
-  - Always self-close tags that have no children. eslint: [`react/self-closing-comp`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/self-closing-comp.md)
+##  Tags
 
-    ```jsx
-    // bad
-    <Foo className="stuff"></Foo>
+始终自我关闭没有孩子的标签。eslint: react/self-closing-comp
 
-    // good
-    <Foo className="stuff" />
-    ```
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/self-closing-comp.md
 
-  - If your component has multi-line properties, close its tag on a new line. eslint: [`react/jsx-closing-bracket-location`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-closing-bracket-location.md)
 
-    ```jsx
-    // bad
-    <Foo
-      bar="bar"
-      baz="baz" />
+```jsx
 
-    // good
-    <Foo
-      bar="bar"
-      baz="baz"
-    />
-    ```
+// bad
+<Foo className="stuff"></Foo>
+
+// good
+<Foo className="stuff" />
+
+``` 
+
+如果组件具有多行属性，请在新行上关闭其标记。eslint: react/jsx-closing-bracket-location
+
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-closing-bracket-location.md
+
+
+```jsx
+
+// bad
+<Foo
+    bar="bar"
+    baz="baz" />
+
+// good
+<Foo
+    bar="bar"
+    baz="baz"
+/>
+
+``` 
+
+
+
 
 ## Methods
 
-  - Use arrow functions to close over local variables.
+使用箭头函数关闭局部变量。
 
-    ```jsx
-    function ItemList(props) {
-      return (
+```jsx
+
+function ItemList(props) {
+    return (
         <ul>
-          {props.items.map((item, index) => (
-            <Item
-              key={item.key}
-              onClick={() => doSomethingWith(item.name, index)}
-            />
-          ))}
+            {props.items.map((item, index) => (
+                <Item
+                    key={item.key}
+                    onClick={() => doSomethingWith(item.name, index)}
+                />
+            ))}
         </ul>
-      );
+    );
+}
+
+``` 
+
+在构造函数中为render方法绑定事件处理程序。 eslint: react/jsx-no-bind
+
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-no-bind.md
+
+为什么？渲染路径中的 bind 调用为每个渲染创建一个全新的函数。
+
+
+```jsx
+
+// bad
+class extends React.Component {
+    onClickDiv() {
+        //
     }
-    ```
-
-  - Bind event handlers for the render method in the constructor. eslint: [`react/jsx-no-bind`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/jsx-no-bind.md)
-
-  > Why? A bind call in the render path creates a brand new function on every single render.
-
-    ```jsx
-    // bad
-    class extends React.Component {
-      onClickDiv() {
-        // do stuff
-      }
-
-      render() {
+    render() {
         return <div onClick={this.onClickDiv.bind(this)} />
-      }
     }
+}
 
-    // good
-    class extends React.Component {
-      constructor(props) {
+// good
+class extends React.Component {
+    constructor(props) {
         super(props);
-
         this.onClickDiv = this.onClickDiv.bind(this);
-      }
-
-      onClickDiv() {
-        // do stuff
-      }
-
-      render() {
+    }
+    onClickDiv() {
+        //
+    }
+    render() {
         return <div onClick={this.onClickDiv} />
-      }
     }
-    ```
+}
 
-  - Do not use underscore prefix for internal methods of a React component.
-  > Why? Underscore prefixes are sometimes used as a convention in other languages to denote privacy. But, unlike those languages, there is no native support for privacy in JavaScript, everything is public. Regardless of your intentions, adding underscore prefixes to your properties does not actually make them private, and any property (underscore-prefixed or not) should be treated as being public. See issues #1024, and #490 for a more in-depth discussion.
+``` 
 
-    ```jsx
-    // bad
-    React.createClass({
-      _onClickSubmit() {
+
+
+不要对React组件的内部方法使用下划线前缀。
+为什么？下划线前缀有时用作其他语言的惯例来表示私有的。但是，与那些语言不同，JavaScript中没有原生支持私有，一切都是公开的。无论你的意图如何，为你的属性添加下划线前缀实际上并不会使它们设置为私有，任何属性（下划线前缀或不带前缀）都应被视为公开。
+请参阅问题＃1024和＃490以进行更深入的讨论。
+
+https://github.com/airbnb/javascript/issues/1024
+
+他们给人们一种“私人”的错误感觉，可能导致错误。
+
+
+
+https://github.com/airbnb/javascript/issues/490
+
+
+```jsx
+
+// bad
+React.createClass({
+    _onClickSubmit() {
         // do stuff
-      },
+    },
+    // other stuff
+});
 
-      // other stuff
-    });
-
-    // good
-    class extends React.Component {
-      onClickSubmit() {
+// good
+class extends React.Component {
+    onClickSubmit() {
         // do stuff
-      }
-
-      // other stuff
     }
-    ```
+    // other stuff
+}
 
-  - Be sure to return a value in your `render` methods. eslint: [`react/require-render-return`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/require-render-return.md)
+``` 
 
-    ```jsx
-    // bad
-    render() {
-      (<div />);
-    }
 
-    // good
-    render() {
-      return (<div />);
-    }
-    ```
+
+请务必在渲染方法中返回一个值。eslint: react/require-render-return
+
+
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/require-render-return.md
+
+
+```jsx
+
+// bad
+render() {
+    (<div />);
+}
+
+// good
+render() {
+    return (<div />);
+}
+
+``` 
+
+
+
+
 
 ## Ordering
 
-  - Ordering for `class extends React.Component`:
+排序 class extends React.Component: 
 
-  1. optional `static` methods
-  1. `constructor`
-  1. `getChildContext`
-  1. `componentWillMount`
-  1. `componentDidMount`
-  1. `componentWillReceiveProps`
-  1. `shouldComponentUpdate`
-  1. `componentWillUpdate`
-  1. `componentDidUpdate`
-  1. `componentWillUnmount`
-  1. *clickHandlers or eventHandlers* like `onClickSubmit()` or `onChangeDescription()`
-  1. *getter methods for `render`* like `getSelectReason()` or `getFooterContent()`
-  1. *Optional render methods* like `renderNavigation()` or `renderProfilePicture()`
-  1. `render`
+01. 可选 static 方法
+02. `constructor`
+03. `getChildContext`
+04. `componentWillMount`
+05. `componentDidMount`
+06. `componentWillReceiveProps`
+07. `shouldComponentUpdate`
+08. `componentWillUpdate`
+09. `componentDidUpdate`
+10. `componentWillUnmount`
+11. 点击处理器 或 事件处理器, 如 `onClickSubmit()` 或 `onChangeDescription()`
+12. 用于 `render` 的 getter方法, 如 `getSelectReason()` 或 `getFooterContent()`
+13. 可选的渲染方法，如 `renderNavigation()` 或 `renderProfilePicture()`
+14. `render`
 
-  - How to define `propTypes`, `defaultProps`, `contextTypes`, etc...
 
-    ```jsx
-    import React, { PropTypes } from 'react';
+如何定义 propTypes, defaultProps, contextTypes, 等等...
 
-    const propTypes = {
-      id: PropTypes.number.isRequired,
-      url: PropTypes.string.isRequired,
-      text: PropTypes.string,
-    };
 
-    const defaultProps = {
-      text: 'Hello World',
-    };
 
-    class Link extends React.Component {
-      static methodsAreOk() {
+```jsx
+
+import React, { PropTypes } from 'react';
+
+const propTypes = {
+    id: PropTypes.number.isRequired,
+    url: PropTypes.string.isRequired,
+    text: PropTypes.string,
+};
+
+const defaultProps = {
+    text: 'Hello World',
+};
+
+class Link extends React.Component {
+    static methodsAreOk() {
         return true;
-      }
-
-      render() {
-        return <a href={this.props.url} data-id={this.props.id}>{this.props.text}</a>
-      }
     }
+    render() {
+        return(
+            <a href={this.props.url} data-id={this.props.id}>
+                {this.props.text}
+            </a>
+        );
+    }
+}
 
-    Link.propTypes = propTypes;
-    Link.defaultProps = defaultProps;
+Link.propTypes = propTypes;
 
-    export default Link;
-    ```
+Link.defaultProps = defaultProps;
 
-  - Ordering for `React.createClass`: eslint: [`react/sort-comp`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/sort-comp.md)
+export default Link;
 
-  1. `displayName`
-  1. `propTypes`
-  1. `contextTypes`
-  1. `childContextTypes`
-  1. `mixins`
-  1. `statics`
-  1. `defaultProps`
-  1. `getDefaultProps`
-  1. `getInitialState`
-  1. `getChildContext`
-  1. `componentWillMount`
-  1. `componentDidMount`
-  1. `componentWillReceiveProps`
-  1. `shouldComponentUpdate`
-  1. `componentWillUpdate`
-  1. `componentDidUpdate`
-  1. `componentWillUnmount`
-  1. *clickHandlers or eventHandlers* like `onClickSubmit()` or `onChangeDescription()`
-  1. *getter methods for `render`* like `getSelectReason()` or `getFooterContent()`
-  1. *Optional render methods* like `renderNavigation()` or `renderProfilePicture()`
-  1. `render`
+``` 
 
-## `isMounted`
 
-  - Do not use `isMounted`. eslint: [`react/no-is-mounted`](https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/no-is-mounted.md)
+排序 React.createClass: eslint: react/sort-comp
 
-  > Why? [`isMounted` is an anti-pattern][anti-pattern], is not available when using ES6 classes, and is on its way to being officially deprecated.
 
-  [anti-pattern]: https://facebook.github.io/react/blog/2015/12/16/ismounted-antipattern.html
+https://github.com/yannickcr/eslint-plugin-react/blob/master/docs/rules/sort-comp.md
 
-## Translation
 
-  This JSX/React style guide is also available in other languages:
 
-  - ![cn](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/China.png) **Chinese (Simplified)**: [JasonBoy/javascript](https://github.com/JasonBoy/javascript/tree/master/react)
-  - ![pl](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/Poland.png) **Polish**: [pietraszekl/javascript](https://github.com/pietraszekl/javascript/tree/master/react)
-  - ![kr](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/South-Korea.png) **Korean**: [apple77y/javascript](https://github.com/apple77y/javascript/tree/master/react)
-  - ![Br](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/Brazil.png) **Portuguese**: [ronal2do/javascript](https://github.com/ronal2do/airbnb-react-styleguide)
-  - ![jp](https://raw.githubusercontent.com/gosquared/flags/master/flags/flags/shiny/24/Japan.png) **Japanese**: [mitsuruog/javascript-style-guide](https://github.com/mitsuruog/javascript-style-guide/tree/master/react)
+01. `displayName`
+02. `propTypes`
+03. `contextTypes`
+04. `childContextTypes`
+05. `mixins`
+06. `statics`
 
-**[⬆ back to top](#table-of-contents)**
+07. `defaultProps`
+08. `getDefaultProps`
+09. `getInitialState`
+
+10. `getChildContext`
+11. `componentWillMount`
+12.  `componentDidMount`
+13. `componentWillReceiveProps`
+
+14. `shouldComponentUpdate`
+15. `componentWillUpdate`
+16. `componentDidUpdate`
+17. `componentWillUnmount`
+
+18. 点击处理器 或 事件处理器, 如 `onClickSubmit()` 或 `onChangeDescription()`
+19. 用于 `render` 的 getter方法, 如 `getSelectReason()` 或 `getFooterContent()`
+20. 可选的渲染方法，如 `renderNavigation()` 或 `renderProfilePicture()`
+21. `render`
+
+
+
+## isMounted
+
+
+不要使用isMounted。 eslint: react/no-is-mounted
+
+为什么？ isMounted是一个反模式，在使用ES6类时不可用，并且正在被正式弃用。
+
+https://facebook.github.io/react/blog/2015/12/16/ismounted-antipattern.html
+
+
+
+
+## 此 JSX / React风格指南也提供其他语言版本：
+
+
+https://github.com/airbnb/javascript/tree/master/react#methods
+
+
+https://github.com/airbnb/javascript/tree/master/react#table-of-contents
+
+
+
+
+
+
